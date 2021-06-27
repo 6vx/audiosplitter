@@ -17,6 +17,12 @@ The purpose is two fold:
 1. Allowing easier access to small parts of the larger whole for sharing etc
 2. Slicing a short piece off to send to Amazon Transcribe, allowing the timestamp to offer a small amount of text based context, even without opening the section to listen. 
 
+## BONUS XP: I want to generate a calendar file
+
+This is for me. I want the start time and file length to pop out after uploading as a calendar file that I can click to add to my calendar. 
+
+Ideally this could integrate some other metadata too, probably collected on same screen as the .TMK upload is. So if you name your TMK before sending it up, the calendar entry will be named accordingly. If you added GPS data, the calendar will be geolocated accordingly, etc etc etc. 
+
 ## TO INFINITY AND BEYOND
 
 I expect to be able to make this function in as a cloud service for free 
