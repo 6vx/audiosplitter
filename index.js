@@ -50,5 +50,15 @@ fs.stat('./samples/210624_1115.tmk', (err, stats) => {
         const element = newStamps[i];
         console.log(element.realTime - lastHolder);
     }
-    // console.log(newStamps);
+    // and, since it's working, let's just output to a file that'll sit beside the
+    // original recording and timestamp files. 
+    // found how to do this at t.ly/Sm2y
+    fs.writeFile("./samples/tmktest.tmk2", JSON.stringify(newStamps), function (err){
+        if(err) {
+            console.log(err);
+      } 
+      else {
+        console.log("Output saved to /tmktest.tmk2");
+      }
+    })
 });
