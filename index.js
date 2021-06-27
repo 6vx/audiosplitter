@@ -1,12 +1,10 @@
-console.log("Project intended to split a large MP3 based on it's accompanying timestamp file.");
+// Filesystem read capability needed for this
 const fs = require("fs");
-
-var data = fs.readFileSync("210624_1115.tmk", "utf-8")
-
-let timestamp = "";
-
-let dataCleaned = [];
-
+// grabbin' my data
+var data = fs.readFileSync("./samples/210624_1115.tmk", "utf-8")
+// somewhere to keep my finished products
+let newStamps = [];
+// the ideal shape of my finished products
 class TimStamp {
     constructor(stampNumber, fromStart, realTime){
         this.stampNumber = stampNumber;
@@ -14,85 +12,43 @@ class TimStamp {
         this.realTime = realTime
     }
 }
-
-fs.stat('210624_1115.tmk', (err, stats) => {
+// reading the stats off of a file to determine the real world start time
+fs.stat('./samples/210624_1115.tmk', (err, stats) => {
     if(err) {
         throw err;
     }
-    // console.log(Object.keys(stats))
-
-    // print file last modified date
-    // console.log(`File Data Last Modified: ${stats.mtime}`);
-    // console.log(`File Status Last Modified: ${stats.ctime}`);
-    // console.log(`File Size: ${stats.size}`);
-    // console.log(`File Created: ${stats.birthtime}`);
-    // console.log(stats.birthtime);
-    // converterVariable = stats.birthtime;
-    // console.log(converterVariable  + " is supposedly the stats.birthtime");
-    // console.log(Date(converterVariable) + " is supposedly the date.")
-    // console.log(Date.now() - converterVariable);
-    // console.log(typeof(converterVariable))
-    // let converterDate = Date(converterVariable);
-    // console.log(typeof(converterDate))
-    // console.log(converterDate)
-    //Learning complete here. birthtimeMs doesn't work. just birthtime.
+    // saving the creation time of the file as the initial timestamp
     timestamp = stats.birthtime;
-    console.log(timestamp);
-    dataCleaned.push(new TimStamp(0, 0, Number(stats.birthtime))) 
-    // console.log(dataCleaned[0].stampNumber + " is inside the stat block.");
-    // console.log(typeof(dataCleaned[28]), dataCleaned[28].stampNumber, dataCleaned[28].fromStart);
-    // Lol, this finished running after the stuff outside, so this ends up getting pushed in last.
-    // I could either make sure the stuff below runs after this, or I could just be aware of it 
-    // and sort my data by the stampNumber variable instead of the index. 
+    // and sending it to the finished product array as my first entry
+    newStamps.push(new TimStamp(0, 0, Number(stats.birthtime))) 
+    // splitting the .TMK file line by line
     data = data.split("\r\n")
-    // console.log(data) 
-    console.log(Number(timestamp))
-    console.log(data.length)
+    // and iterating through it to clean it up
     data.forEach(oldtime => {
+        // starting the index at +1, since we've already got T-0
         let stampNumber = ( data.indexOf(oldtime) + 1 );
-        // console.log(oldtime)
-        // console.log(oldtime.slice(1,-1))
-        // console.log(oldtime.replace(':', ''));
-        // console.log(oldtime.slice(1,-1).replace(':','').replace('.',''));
+        // stripping out the extra characters from Sony's timestamp format
         let newOldtime = oldtime.replace('[','').replace(']','').replace(':','').replace('.','');
-        let minutes = Number(newOldtime.slice(0,5));
-        let seconds = Number(newOldtime.slice(5,7));
-        let millisecs = Number(newOldtime.slice(7,9));
-        let evenNewerOldTime = (millisecs + seconds*100 + minutes*6000)
-        console.log(minutes, "minutes", seconds,"seconds", millisecs, "milliseconds", evenNewerOldTime, "total milliseconds");
-        // console.log("newOldtime inputted: " + newOldtime + typeof(newOldtime));
-        let newRealtime = dataCleaned[0].realTime + evenNewerOldTime;
-        // console.log("newRealtime inputted: " + newRealtime + typeof(newRealtime));
-        // catching empty lines.
+        // and converting it into milliseconds for interacting with a regular Date
+        let evenNewerOldTime = (Number(newOldtime.slice(7,9)) + Number(newOldtime.slice(5,7))*1000 + Number(newOldtime.slice(0,5))*60000)
+        // creating a real-world time stamp, the initial file creation time plus the value in ms of the timestamp
+        let newRealtime = newStamps[0].realTime + evenNewerOldTime;
+        // this just catches empty lines if there are any at the top or bottom of the .TMK file
+            // TODO :   Maybe this is really dumb and bad. It seems rickety somehow. 
+            //          Maybe... fix it... later... 
         if (oldtime.length > 4) {
-        dataCleaned.push(new TimStamp(stampNumber, evenNewerOldTime, newRealtime));
-            
+            // Get on in there you shiny cleaned up lil thinger!
+            newStamps.push(new TimStamp(stampNumber, evenNewerOldTime, newRealtime));
         }
     });
-    // console.log("Cleaned " + dataCleaned.length + " timestamps and added to array.");
-    // console.log(dataCleaned[0].stampNumber + " is at 0 position.");
-    // console.log(dataCleaned[1].stampNumber + " is at 1 position");
-    // console.log(dataCleaned[0]);
-    // console.log(dataCleaned[10]);
-    // let zippity = Date.now(timestamp);
-    // let dooda = zippity + Number(dataCleaned[0].fromStart)
-    // console.log(Number(dataCleaned[0].fromStart))
-    // console.log(zippity);
-    // console.log(dooda);
-    // console.log(zippity - dooda);
-    // CONFIRMED - timestamps will meld without issue, both accurate to the same number of digits. 
-    // console.log(typeof(dataCleaned[0].realTime), dataCleaned[0].realTime, "is the first timestamp", new Date(dataCleaned[0].realTime));
-    // console.log(typeof(dataCleaned[1].realTime), dataCleaned[1].realTime, "is the 1st timestamps real time.", new Date(dataCleaned[1].realTime));
-    // console.log(typeof(dataCleaned[25].realTime), dataCleaned[25].realTime, "is the 25th timestamps real time.", new Date(dataCleaned[25].realTime));
+    // This just checks to see that something happened by looping through
+    //      and showing an incrementally increasing list of timestamps. 
+    //      which is kinda what I'm lookin' fer. So does that mean 
+    //          I can claim I have experience with testing? :P
     let lastHolder = 1624743738591
-    for (let i = 0; i < dataCleaned.length; i++) {
-        const element = dataCleaned[i];
+    for (let i = 0; i < newStamps.length; i++) {
+        const element = newStamps[i];
         console.log(element.realTime - lastHolder);
     }
-    console.log(dataCleaned);
+    // console.log(newStamps);
 });
-
-
-
-
-
